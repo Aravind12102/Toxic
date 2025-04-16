@@ -1,27 +1,24 @@
 import streamlit as st
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 import google.generativeai as genai
-import time
 
 def get_form_text(form_url):
     try:
-        # Path to your local ChromeDriver
-        driver_path = "https://github.com/Sushiiel/Toxic/releases/tag/v1.0"
-        service = Service(driver_path)
         options = Options()
-        options.add_argument("--headless")  # Run in headless mode (no visible window)
+        options.add_argument("--headless")
         options.add_argument("--disable-gpu")
-        driver = webdriver.Chrome(service=service, options=options)
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
 
-        # Load the Google Form
+        driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+
         driver.get(form_url)
 
-        # Wait for the form to load and extract elements
         wait = WebDriverWait(driver, 10)
         elements = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".o3Dpx")))
         elements_text = [element.text for element in elements]
@@ -40,7 +37,7 @@ def get_gemini_response(input_text):
     )
     return response.text
 
-# Streamlit App
+# Streamlit App UI
 st.set_page_config(page_title="Google Form AI Assistant", layout="centered")
 st.title("📄 Google Form Analyzer with Gemini AI")
 
@@ -52,7 +49,7 @@ if st.button("Analyze Form"):
             form_content = get_form_text(form_url)
 
             if isinstance(form_content, str):
-                st.error(form_content)  # Display error if form_content is an error message
+                st.error(form_content)
             else:
                 gemini_output = get_gemini_response(form_content)
 
