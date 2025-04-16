@@ -5,19 +5,33 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
+import shutil
+import os
 import google.generativeai as genai
 
 def get_form_text(form_url):
     try:
         options = Options()
-        options.binary_location = "/usr/bin/google-chrome"  # Required for Streamlit Cloud
+
+        # Detect chromium and chromedriver paths or fallback to known paths
+        chrome_path = shutil.which("chromium") or "/usr/bin/chromium"
+        driver_path = shutil.which("chromium-driver") or "/usr/lib/chromium/chromedriver"
+
+        # Debug print (optional)
+        print("Chrome path:", chrome_path)
+        print("Driver path:", driver_path)
+
+        if not os.path.exists(chrome_path):
+            return f"Error: Chrome not found at {chrome_path}"
+        if not os.path.exists(driver_path):
+            return f"Error: Chromedriver not found at {driver_path}"
+
+        options.binary_location = chrome_path
         options.add_argument("--headless")
-        options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
 
-        service = Service(ChromeDriverManager().install())
+        service = Service(driver_path)
         driver = webdriver.Chrome(service=service, options=options)
 
         driver.get(form_url)
