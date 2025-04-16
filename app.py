@@ -11,6 +11,7 @@ import google.generativeai as genai
 def get_form_text(form_url):
     try:
         options = Options()
+        options.binary_location = "/usr/bin/google-chrome"  # Required for Streamlit Cloud
         options.add_argument("--headless")
         options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
